@@ -1,0 +1,103 @@
+@use '@/styles/variables.scss' as *;
+
+.categoryPage {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  background: $color-bg-page;
+}
+
+// 左侧分类列表
+.leftNav {
+  width: 180rpx;
+  background: $color-bg-card;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+.navItem {
+  height: 96rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: $font-size-md;
+  color: $color-text-secondary;
+  position: relative;
+  transition: all $transition-base;
+
+  &.active {
+    color: $color-primary;
+    font-weight: $font-weight-semibold;
+    background: $color-bg-page;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 6rpx;
+      height: 36rpx;
+      background: $color-primary;
+      border-radius: 0 $radius-xs $radius-xs 0;
+    }
+  }
+}
+
+// 右侧内容区
+.rightContent {
+  flex: 1;
+  padding: $spacing-md;
+  overflow-y: auto;
+}
+
+.sectionTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+}
+
+.subCategoryGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: $spacing-md;
+  margin-bottom: $spacing-lg;
+}
+
+.subCategoryItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-md 0;
+}
+
+.subCategoryImage {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: $radius-md;
+}
+
+.subCategoryName {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+// 推荐商品
+.recommendSection {
+  margin-top: $spacing-md;
+}
+
+.recommendTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+}
+
+.recommendGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $spacing-md;
+}

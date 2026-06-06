@@ -1,0 +1,186 @@
+@use '@/styles/variables.scss' as *;
+
+.cartPage {
+  min-height: 100vh;
+  padding-bottom: 120rpx;
+  background: $color-bg-page;
+}
+
+// 购物车项
+.cartItem {
+  display: flex;
+  align-items: center;
+  background: $color-bg-card;
+  margin: $spacing-md $page-padding 0;
+  padding: $spacing-md;
+  border-radius: $radius-md;
+  box-shadow: $shadow-card;
+}
+
+// 原生 Checkbox
+.checkBox {
+  margin-right: $spacing-md;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+
+.itemImage {
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: $radius-sm;
+  flex-shrink: 0;
+}
+
+.itemInfo {
+  flex: 1;
+  margin-left: $spacing-md;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 160rpx;
+}
+
+.itemName {
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+  @include text-ellipsis-multi(2);
+}
+
+.itemSku {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  margin-top: $spacing-xs;
+}
+
+.itemBottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+}
+
+.itemPrice {
+  font-size: $font-size-lg;
+  color: $color-price;
+  font-weight: $font-weight-semibold;
+}
+
+.quantityControl {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.qtyBtn {
+  width: 52rpx;
+  height: 48rpx;
+  border: 2rpx solid $color-border;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32rpx;
+  color: $color-text-primary;
+  background: $color-bg-card;
+
+  &:first-child {
+    border-radius: $radius-xs 0 0 $radius-xs;
+  }
+
+  &:last-child {
+    border-radius: 0 $radius-xs $radius-xs 0;
+  }
+
+  &:active {
+    background: $color-bg-hover;
+  }
+}
+
+.qtyInput {
+  width: 72rpx;
+  height: 48rpx;
+  border-top: 2rpx solid $color-border;
+  border-bottom: 2rpx solid $color-border;
+  text-align: center;
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  line-height: 48rpx;
+  background: $color-bg-card;
+}
+
+.deleteBtn {
+  margin-left: $spacing-sm;
+  padding: $spacing-xs;
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+
+  &:active {
+    color: $color-error;
+  }
+}
+
+// 底部结算栏
+.bottomBar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: $color-bg-card;
+  padding: $spacing-md $page-padding;
+  padding-bottom: calc($spacing-md + env(safe-area-inset-bottom, 0));
+  display: flex;
+  align-items: center;
+  box-shadow: 0 -2rpx 12rpx rgba(0, 0, 0, 0.06);
+  z-index: 100;
+}
+
+.checkAll {
+  display: flex;
+  align-items: center;
+  margin-right: auto;
+}
+
+.checkAllText {
+  font-size: $font-size-md;
+  color: $color-text-secondary;
+  margin-left: $spacing-sm;
+}
+
+.totalArea {
+  margin-right: $spacing-lg;
+  text-align: right;
+}
+
+.totalLabel {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.totalPrice {
+  font-size: $font-size-xl;
+  color: $color-price;
+  font-weight: $font-weight-semibold;
+}
+
+.totalPriceSymbol {
+  font-size: $font-size-sm;
+}
+
+.settleBtn {
+  height: $button-height-md;
+  padding: 0 $spacing-xl;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  color: $color-text-white;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  border-radius: $radius-button;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 200rpx;
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
+}

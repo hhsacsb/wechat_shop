@@ -1,0 +1,169 @@
+@use '@/styles/variables.scss' as *;
+
+.detailPage {
+  padding-bottom: 120rpx;
+  background: $color-bg-page;
+}
+
+// 商品图片轮播
+.imageSwiper {
+  height: 750rpx;
+
+  .swiperImage {
+    width: 100%;
+    height: 750rpx;
+  }
+}
+
+// 商品信息
+.infoSection {
+  background: $color-bg-card;
+  padding: $spacing-lg $page-padding;
+  margin-bottom: $spacing-md;
+}
+
+.priceRow {
+  display: flex;
+  align-items: baseline;
+  gap: $spacing-sm;
+}
+
+.currentPrice {
+  font-size: 48rpx;
+  color: $color-price;
+  font-weight: $font-weight-bold;
+}
+
+.originalPrice {
+  font-size: $font-size-md;
+  color: $color-text-tertiary;
+  text-decoration: line-through;
+}
+
+.salesInfo {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  margin-left: auto;
+}
+
+.productName {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-top: $spacing-md;
+  line-height: $line-height-tight;
+}
+
+.subtitle {
+  font-size: $font-size-md;
+  color: $color-text-tertiary;
+  margin-top: $spacing-sm;
+}
+
+// SKU 选择
+.skuSection {
+  background: $color-bg-card;
+  padding: $spacing-lg $page-padding;
+  margin-bottom: $spacing-md;
+}
+
+.skuTitle {
+  font-size: $font-size-md;
+  color: $color-text-secondary;
+  margin-bottom: $spacing-md;
+}
+
+.skuOptions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-md;
+}
+
+.skuOption {
+  padding: $spacing-sm $spacing-lg;
+  border: 2rpx solid $color-border;
+  border-radius: $radius-sm;
+  font-size: $font-size-md;
+  color: $color-text-secondary;
+
+  &.selected {
+    border-color: $color-primary;
+    color: $color-primary;
+    background: $color-tag-bg;
+  }
+
+  &:active {
+    opacity: 0.8;
+  }
+}
+
+// 商品详情内容
+.contentSection {
+  background: $color-bg-card;
+  padding: $spacing-lg $page-padding;
+  margin-bottom: $spacing-md;
+}
+
+.contentTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+}
+
+.contentText {
+  font-size: $font-size-md;
+  color: $color-text-secondary;
+  line-height: $line-height-loose;
+}
+
+// 底部操作栏
+.bottomBar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: $color-bg-card;
+  display: flex;
+  align-items: center;
+  padding: $spacing-md $page-padding;
+  padding-bottom: calc($spacing-md + env(safe-area-inset-bottom, 0));
+  box-shadow: 0 -2rpx 12rpx rgba(0, 0, 0, 0.06);
+  z-index: 100;
+  gap: $spacing-md;
+}
+
+.cartBtn {
+  height: $button-height-md;
+  flex: 1;
+  border: 2rpx solid $color-primary;
+  border-radius: $radius-button;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: $font-size-md;
+  color: $color-primary;
+  font-weight: $font-weight-medium;
+
+  &:active {
+    opacity: 0.8;
+  }
+}
+
+.buyBtn {
+  height: $button-height-md;
+  flex: 1;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  border-radius: $radius-button;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: $font-size-md;
+  color: $color-text-white;
+  font-weight: $font-weight-semibold;
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
+}

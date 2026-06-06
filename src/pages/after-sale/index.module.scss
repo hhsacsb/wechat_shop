@@ -1,0 +1,129 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  padding: $spacing-md $page-padding;
+  min-height: 100vh;
+  background: $color-bg-page;
+}
+
+.section {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+}
+
+.sectionTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+}
+
+// 商品信息
+.productInfo {
+  display: flex;
+  align-items: center;
+}
+
+.productImage {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: $radius-sm;
+  flex-shrink: 0;
+}
+
+.productMeta {
+  margin-left: $spacing-md;
+  flex: 1;
+}
+
+.productName {
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  @include text-ellipsis-multi(2);
+}
+
+.productSku {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  margin-top: $spacing-xs;
+}
+
+// 原因选择
+.reasonList {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.reasonItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-md 0;
+  border-bottom: 2rpx solid $color-divider;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.reasonText {
+  font-size: $font-size-md;
+  color: $color-text-primary;
+}
+
+.radio {
+  width: 36rpx;
+  height: 36rpx;
+  border-radius: $radius-round;
+  border: 2rpx solid $color-border;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &.selected {
+    border-color: $color-primary;
+    background: $color-primary;
+  }
+}
+
+.radioDot {
+  width: 16rpx;
+  height: 16rpx;
+  border-radius: $radius-round;
+  background: $color-bg-card;
+}
+
+// 说明输入
+.textarea {
+  width: 100%;
+  min-height: 160rpx;
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  padding: $spacing-md;
+  background: $color-bg-hover;
+  border-radius: $radius-sm;
+  border: none;
+}
+
+// 提交按钮
+.submitBtn {
+  height: $button-height-md;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  color: $color-text-white;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  border-radius: $radius-button;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: $spacing-lg;
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
+}

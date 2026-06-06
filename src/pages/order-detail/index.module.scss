@@ -1,0 +1,165 @@
+@use '@/styles/variables.scss' as *;
+
+.detailPage {
+  padding-bottom: $spacing-xl;
+  background: $color-bg-page;
+}
+
+// 状态头
+.statusHeader {
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  padding: $spacing-xl $page-padding;
+  color: $color-text-white;
+}
+
+.statusTitle {
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-semibold;
+}
+
+.statusDesc {
+  font-size: $font-size-md;
+  margin-top: $spacing-xs;
+  opacity: 0.9;
+}
+
+// 地址信息
+.addressSection {
+  background: $color-bg-card;
+  padding: $spacing-lg $page-padding;
+  margin-bottom: $spacing-md;
+}
+
+.addressName {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.addressMobile {
+  font-size: $font-size-md;
+  color: $color-text-secondary;
+  margin-left: $spacing-md;
+}
+
+.addressDetail {
+  font-size: $font-size-md;
+  color: $color-text-secondary;
+  margin-top: $spacing-xs;
+}
+
+// 商品列表
+.orderItems {
+  background: $color-bg-card;
+  padding: $spacing-md $page-padding;
+  margin-bottom: $spacing-md;
+}
+
+.orderItem {
+  display: flex;
+  align-items: center;
+  padding: $spacing-md 0;
+  border-bottom: 2rpx solid $color-divider;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.itemImage {
+  width: 140rpx;
+  height: 140rpx;
+  border-radius: $radius-sm;
+  flex-shrink: 0;
+}
+
+.itemInfo {
+  flex: 1;
+  margin-left: $spacing-md;
+}
+
+.itemName {
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  @include text-ellipsis-multi(2);
+}
+
+.itemSku {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  margin-top: $spacing-xs;
+}
+
+.itemPrice {
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+}
+
+.itemQty {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+// 信息汇总
+.infoSection {
+  background: $color-bg-card;
+  padding: $spacing-lg $page-padding;
+  margin-bottom: $spacing-md;
+}
+
+.infoRow {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: $spacing-sm;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.infoLabel {
+  font-size: $font-size-md;
+  color: $color-text-secondary;
+}
+
+.infoValue {
+  font-size: $font-size-md;
+  color: $color-text-primary;
+}
+
+.totalRow {
+  .infoValue {
+    color: $color-price;
+    font-weight: $font-weight-semibold;
+  }
+}
+
+// 底部操作
+.bottomActions {
+  padding: $spacing-md $page-padding;
+  display: flex;
+  justify-content: flex-end;
+  gap: $spacing-md;
+}
+
+.actionBtn {
+  height: 64rpx;
+  padding: 0 $spacing-lg;
+  border: 2rpx solid $color-border;
+  border-radius: $radius-button;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &.primary {
+    border-color: $color-primary;
+    color: $color-primary;
+  }
+
+  &:active {
+    opacity: 0.8;
+  }
+}

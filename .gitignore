@@ -1,0 +1,41 @@
+# dependencies
+node_modules/
+
+# production
+dist/
+
+# build outputs
+lib/
+
+# env files
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.pai/
+.swc/
+
+# Project private config
+project.private.config.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Taro cache
+.cache/
+.taro-cache/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Package lock (keep only one)
+package-lock.json
