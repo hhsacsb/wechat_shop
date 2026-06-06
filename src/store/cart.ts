@@ -6,6 +6,7 @@ interface CartState {
   items: CartItem[]
   loading: boolean
   fetchCart: () => void
+  findItem: (productId: number, skuId: number) => CartItem | undefined
   addItem: (item: CartItem) => void
   updateQuantity: (id: number, quantity: number) => void
   toggleCheck: (id: number) => void
@@ -29,6 +30,13 @@ export const useCartStore = create<CartState>((set, get) => ({
     } finally {
       set({ loading: false })
     }
+  },
+
+  // 查找购物车中是否已存在指定商品+SKU
+  findItem: (productId, skuId) => {
+    return get().items.find(
+      (i) => i.productId === productId && i.skuId === skuId
+    )
   },
 
   addItem: (item) => {

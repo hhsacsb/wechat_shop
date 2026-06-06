@@ -10,7 +10,8 @@ import { Sku, CartItem } from '@/types'
 const ProductDetailPage: React.FC = () => {
   const [product] = useState(mockProductDetail)
   const [selectedSku, setSelectedSku] = useState<Sku | null>(null)
-  const [quantity] = useState(1)
+  const [quantity, setQuantity] = useState(1)
+  const [added, setAdded] = useState(false)
   const addItem = useCartStore((state) => state.addItem)
 
   useEffect(() => {
@@ -19,8 +20,9 @@ const ProductDetailPage: React.FC = () => {
     }
   }, [product])
 
+  // 加入购物车：点击后禁用按钮，防止重复添加
   const handleAddCart = () => {
-    if (!selectedSku) return
+    if (!selectedSku || added) return
     const cartItem: CartItem = {
       id: Date.now(),
       userId: 1,
@@ -35,11 +37,23 @@ const ProductDetailPage: React.FC = () => {
       stock: selectedSku.stock,
     }
     addItem(cartItem)
+    setAdded(true)
     Taro.showToast({ title: '已加入购物车', icon: 'success' })
   }
 
+  // 立即购买：将当前商品信息传到确认页
   const handleBuyNow = () => {
-    Taro.navigateTo({ url: '/pages/order-confirm/index' })
+    if (!selectedSku) return
+    const params = encodeURIComponent(JSON.stringify({
+      productId: product.id,
+      productName: product.name,
+      coverImage: product.coverImage,
+      skuId: selectedSku.id,
+      skuDesc: selectedSku.specValue,
+      price: selectedSku.price,
+      quantity,
+    }))
+    Taro.navigateTo({ url: `/pages/order-confirm/index?buyNow=${params}` })
   }
 
   return (
@@ -90,7 +104,12 @@ const ProductDetailPage: React.FC = () => {
 
       {/* 底部操作栏 */}
       <View className={styles.bottomBar}>
-        <View className={styles.cartBtn} onClick={handleAddCart}>加入购物车</View>
+        <View
+          className={`${styles.cartBtn} ${added ? styles.cartBtnDisabled : ''}`}
+          onClick={handleAddCart}
+        >
+          {added ? '已加入' : '加入购物车'}
+        </View>
         <View className={styles.buyBtn} onClick={handleBuyNow}>立即购买</View>
       </View>
     </View>

@@ -1,19 +1,95 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo, useCallback } from 'react'
 import { View, Text, Image, Input } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import styles from './index.module.scss'
 import { mockAddresses, mockCoupons } from '@/data/order'
 import { useCartStore } from '@/store/cart'
 
+// 立即购买时从 URL 解析的商品信息
+interface BuyNowItem {
+  productId: number
+  productName: string
+  coverImage: string
+  skuId: number
+  skuDesc: string
+  price: number
+  quantity: number
+}
+
+// 生成稳定 ID（避免 Date.now() 每次渲染变化）
+const makeStableId = (productId: number, skuId: number) => `${productId}_${skuId}`
+
 const OrderConfirmPage: React.FC = () => {
   const [address] = useState(mockAddresses[0])
   const [remark, setRemark] = useState('')
+  // 用字符串 key 存储，避免数字 id 冲突
+  const [qtyMap, setQtyMap] = useState<Record<string, number>>({})
   const getCheckedItems = useCartStore((state) => state.getCheckedItems)
-  const getTotalAmount = useCartStore((state) => state.getTotalAmount)
-  const items = getCheckedItems()
-  const totalAmount = getTotalAmount()
-  const coupon = mockCoupons[0]
 
+  // 判断是否为"立即购买"模式（只在首次计算）
+  const buyNowItem = useMemo<BuyNowItem | null>(() => {
+    try {
+      const params = Taro.getCurrentInstance().router?.params?.buyNow
+      if (params) {
+        return JSON.parse(decodeURIComponent(params))
+      }
+    } catch {}
+    return null
+  }, [])
+
+  // 稳定化商品列表 + 统一 id 格式
+  const sourceItems = useMemo(() => {
+    if (buyNowItem) {
+      return [{
+        stableId: makeStableId(buyNowItem.productId, buyNowItem.skuId),
+        productId: buyNowItem.productId,
+        productName: buyNowItem.productName,
+        coverImage: buyNowItem.coverImage,
+        skuId: buyNowItem.skuId,
+        skuDesc: buyNowItem.skuDesc,
+        price: buyNowItem.price,
+        quantity: buyNowItem.quantity,
+      }]
+    }
+    return getCheckedItems().map((item) => ({
+      ...item,
+      stableId: makeStableId(item.productId, item.skuId),
+    }))
+  }, [buyNowItem])
+
+  // 首次挂载时初始化数量（只执行一次）
+  const initializedRef = React.useRef(false)
+  if (!initializedRef.current && sourceItems.length > 0) {
+    initializedRef.current = true
+    const init: Record<string, number> = {}
+    sourceItems.forEach((item) => { init[item.stableId] = item.quantity })
+    // 同步设置初始值，避免首次渲染空白
+    Object.keys(qtyMap).length === 0 && setQtyMap(init)
+  }
+
+  // 获取某项当前数量
+  const getQty = useCallback((stableId: string): number => {
+    return qtyMap[stableId] ?? 1
+  }, [qtyMap])
+
+  // 调整数量
+  const handleQtyChange = useCallback((stableId: string, delta: number) => {
+    setQtyMap((prev) => {
+      const current = prev[stableId] ?? 1
+      const newQty = Math.max(1, current + delta)
+      return { ...prev, [stableId]: newQty }
+    })
+  }, [])
+
+  // 实时计算总金额
+  const totalAmount = useMemo(() => {
+    return sourceItems.reduce(
+      (sum, item) => sum + item.price * getQty(item.stableId),
+      0
+    )
+  }, [sourceItems, qtyMap])
+
+  const coupon = mockCoupons[0]
   const discount = totalAmount >= coupon.minAmount ? coupon.amount : 0
   const payAmount = totalAmount - discount
 
@@ -46,19 +122,37 @@ const OrderConfirmPage: React.FC = () => {
 
       {/* 商品列表 */}
       <View className={styles.orderItems}>
-        {items.length > 0 ? items.map((item) => (
-          <View key={item.id} className={styles.orderItem}>
-            <Image className={styles.itemImage} src={item.coverImage} mode='aspectFill' />
-            <View className={styles.itemInfo}>
-              <Text className={styles.itemName}>{item.productName}</Text>
-              <Text className={styles.itemSku}>{item.skuDesc}</Text>
-              <View className={styles.itemBottom}>
-                <Text className={styles.itemPrice}>¥{item.price}</Text>
-                <Text className={styles.itemQty}>x{item.quantity}</Text>
+        {sourceItems.length > 0 ? sourceItems.map((item) => {
+          const qty = getQty(item.stableId)
+          return (
+            <View key={item.stableId} className={styles.orderItem}>
+              <Image className={styles.itemImage} src={item.coverImage} mode='aspectFill' />
+              <View className={styles.itemInfo}>
+                <Text className={styles.itemName}>{item.productName}</Text>
+                <Text className={styles.itemSku}>{item.skuDesc}</Text>
+                <View className={styles.itemBottom}>
+                  <Text className={styles.itemPrice}>¥{item.price}</Text>
+                  {/* 数量加减按钮 */}
+                  <View className={styles.qtyControl}>
+                    <View
+                      className={`${styles.qtyBtn} ${qty <= 1 ? styles.qtyBtnDisabled : ''}`}
+                      onClick={() => handleQtyChange(item.stableId, -1)}
+                    >
+                      <Text>-</Text>
+                    </View>
+                    <Text className={styles.qtyNum}>{qty}</Text>
+                    <View
+                      className={styles.qtyBtn}
+                      onClick={() => handleQtyChange(item.stableId, 1)}
+                    >
+                      <Text>+</Text>
+                    </View>
+                  </View>
+                </View>
               </View>
             </View>
-          </View>
-        )) : (
+          )
+        }) : (
           <Text>请先在购物车选择商品</Text>
         )}
       </View>

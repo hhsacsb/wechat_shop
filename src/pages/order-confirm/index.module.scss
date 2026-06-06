@@ -94,9 +94,41 @@
   font-weight: $font-weight-semibold;
 }
 
-.itemQty {
-  font-size: $font-size-sm;
-  color: $color-text-tertiary;
+// 数量加减控件
+.qtyControl {
+  display: flex;
+  align-items: center;
+  border: 2rpx solid $color-border;
+  border-radius: $radius-sm;
+  overflow: hidden;
+}
+
+.qtyBtn {
+  width: 52rpx;
+  height: 48rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: $color-bg-page;
+  color: $color-text-secondary;
+  font-size: $font-size-lg;
+
+  &:active {
+    background: $color-bg-hover;
+  }
+}
+
+.qtyBtnDisabled {
+  color: $color-text-disabled;
+  pointer-events: none;
+}
+
+.qtyNum {
+  width: 56rpx;
+  text-align: center;
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
 }
 
 // 优惠券

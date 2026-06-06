@@ -1,7 +1,7 @@
 @use '@/styles/variables.scss' as *;
 
 .detailPage {
-  padding-bottom: 120rpx;
+  padding-bottom: 180rpx;
   background: $color-bg-page;
 }
 
@@ -148,6 +148,12 @@
   &:active {
     opacity: 0.8;
   }
+}
+
+.cartBtnDisabled {
+  border-color: $color-text-disabled;
+  color: $color-text-disabled;
+  pointer-events: none;
 }
 
 .buyBtn {
