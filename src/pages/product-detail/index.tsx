@@ -1,49 +1,111 @@
 import React, { useState, useEffect } from 'react'
 import { View, Text, Image, Swiper, SwiperItem, ScrollView } from '@tarojs/components'
-import Taro from '@tarojs/taro'
+import Taro, { useRouter } from '@tarojs/taro'
 import classnames from 'classnames'
 import styles from './index.module.scss'
-import { mockProductDetail } from '@/data/product'
+import { getProductDetail } from '@/api'
 import { useCartStore } from '@/store/cart'
-import { Sku, CartItem } from '@/types'
+import { Product, Sku, CartItem } from '@/types'
 
 const ProductDetailPage: React.FC = () => {
-  const [product] = useState(mockProductDetail)
+  const router = useRouter()
+  const [product, setProduct] = useState<Product | null>(null)
   const [selectedSku, setSelectedSku] = useState<Sku | null>(null)
   const [quantity, setQuantity] = useState(1)
   const [added, setAdded] = useState(false)
+  const [loading, setLoading] = useState(true)
   const addItem = useCartStore((state) => state.addItem)
 
   useEffect(() => {
-    if (product.skus.length > 0) {
+    if (router.params?.id) {
+      loadProductDetail(Number(router.params.id))
+    }
+  }, [])
+
+  useEffect(() => {
+    if (product?.skus && product.skus.length > 0) {
       setSelectedSku(product.skus[0])
     }
   }, [product])
 
-  // 加入购物车：点击后禁用按钮，防止重复添加
-  const handleAddCart = () => {
-    if (!selectedSku || added) return
-    const cartItem: CartItem = {
-      id: Date.now(),
-      userId: 1,
-      productId: product.id,
-      skuId: selectedSku.id,
-      quantity,
-      checked: true,
-      productName: product.name,
-      skuDesc: selectedSku.specValue,
-      price: selectedSku.price,
-      coverImage: product.coverImage,
-      stock: selectedSku.stock,
+  const loadProductDetail = async (id: number) => {
+    try {
+      setLoading(true)
+      const data = await getProductDetail(id)
+
+      // 转换 API 响应为前端格式
+      setProduct({
+        id: data.id,
+        categoryId: data.category_id || 0,
+        name: data.name || '',
+        subtitle: data.subtitle || '',
+        coverImage: data.cover_image || data.coverImage || '',
+        content: data.content || '',
+        price: data.price || 0,
+        originalPrice: data.original_price || data.originalPrice || 0,
+        salesCount: data.sales_count || data.salesCount || 0,
+        status: data.status || 1,
+        skus: (data.skus || []).map((s: any) => ({
+          id: s.id,
+          productId: s.product_id || id,
+          skuCode: s.sku_code || '',
+          specValue: s.spec_value || s.specValue || '',
+          price: s.price || 0,
+          stock: s.stock || 0,
+          image: s.image || '',
+        })),
+        images: (data.images || []).map((img: any) =>
+          typeof img === 'string' ? img : img.url || img.image || ''
+        ),
+      })
+    } catch (error) {
+      console.error('加载商品详情失败:', error)
+      Taro.showToast({ title: '加载失败', icon: 'none' })
+    } finally {
+      setLoading(false)
     }
-    addItem(cartItem)
-    setAdded(true)
-    Taro.showToast({ title: '已加入购物车', icon: 'success' })
   }
 
-  // 立即购买：将当前商品信息传到确认页
+  // 加入购物车
+  const handleAddCart = async () => {
+    if (!product || !selectedSku || added) return
+
+    try {
+      // 调用后端 API 加入购物车
+      const { addToCart } = require('@/api')
+      await addToCart({
+        product_id: product.id,
+        sku_id: selectedSku.id,
+        quantity,
+      })
+
+      setAdded(true)
+      Taro.showToast({ title: '已加入购物车', icon: 'success' })
+    } catch (error) {
+      console.error('加入购物车失败:', error)
+      // 如果 API 失败，降级为本地状态（开发阶段）
+      const cartItem: CartItem = {
+        id: Date.now(),
+        userId: 1,
+        productId: product.id,
+        skuId: selectedSku.id,
+        quantity,
+        checked: true,
+        productName: product.name,
+        skuDesc: selectedSku.specValue,
+        price: selectedSku.price,
+        coverImage: product.coverImage,
+        stock: selectedSku.stock,
+      }
+      addItem(cartItem)
+      setAdded(true)
+      Taro.showToast({ title: '已加入购物车(本地)', icon: 'success' })
+    }
+  }
+
+  // 立即购买
   const handleBuyNow = () => {
-    if (!selectedSku) return
+    if (!product || !selectedSku) return
     const params = encodeURIComponent(JSON.stringify({
       productId: product.id,
       productName: product.name,
@@ -54,6 +116,14 @@ const ProductDetailPage: React.FC = () => {
       quantity,
     }))
     Taro.navigateTo({ url: `/pages/order-confirm/index?buyNow=${params}` })
+  }
+
+  if (loading || !product) {
+    return (
+      <View className={styles.detailPage} style={{ padding: '100px 0', textAlign: 'center' }}>
+        <Text>加载中...</Text>
+      </View>
+    )
   }
 
   return (

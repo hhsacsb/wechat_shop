@@ -1,6 +1,6 @@
 import Taro from '@tarojs/taro'
 
-const BASE_URL = 'https://dev-api.xxx.com'
+const BASE_URL = 'http://localhost:3000'
 
 const request = <T>(url: string, options?: Taro.request.Option): Promise<T> => {
   return new Promise((resolve, reject) => {

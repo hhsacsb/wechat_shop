@@ -7,6 +7,7 @@ import styles from './index.module.scss'
 const PayResultPage: React.FC = () => {
   const [success, setSuccess] = useState(true)
   const [amount, setAmount] = useState('0.00')
+  const [orderId, setOrderId] = useState<string>('')
 
   useEffect(() => {
     const params = Taro.getCurrentInstance().router?.params
@@ -16,6 +17,12 @@ const PayResultPage: React.FC = () => {
     if (params?.amount) {
       setAmount(params.amount as string)
     }
+    if (params?.orderId) {
+      setOrderId(params.orderId)
+    }
+
+    // 如果支付成功，可以在这里调用查询订单状态等操作
+    // TODO: 可以调用 getOrderDetail 验证订单状态
   }, [])
 
   const handleViewOrder = () => {

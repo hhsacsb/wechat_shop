@@ -1,9 +1,9 @@
-import React, { useState, useMemo, useCallback } from 'react'
+import React, { useState, useMemo, useCallback, useEffect } from 'react'
 import { View, Text, Image, Input } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import styles from './index.module.scss'
-import { mockAddresses, mockCoupons } from '@/data/order'
 import { useCartStore } from '@/store/cart'
+import { getAddressList, getCouponList, createOrder, previewOrder } from '@/api'
 
 // 立即购买时从 URL 解析的商品信息
 interface BuyNowItem {
@@ -20,11 +20,43 @@ interface BuyNowItem {
 const makeStableId = (productId: number, skuId: number) => `${productId}_${skuId}`
 
 const OrderConfirmPage: React.FC = () => {
-  const [address] = useState(mockAddresses[0])
+  const [addresses, setAddresses] = useState<any[]>([])
+  const [coupons, setCoupons] = useState<any[]>([])
+  const [selectedAddress, setSelectedAddress] = useState<any>(null)
+  const [selectedCoupon, setSelectedCoupon] = useState<any>(null)
   const [remark, setRemark] = useState('')
+  const [submitting, setSubmitting] = useState(false)
   // 用字符串 key 存储，避免数字 id 冲突
   const [qtyMap, setQtyMap] = useState<Record<string, number>>({})
   const getCheckedItems = useCartStore((state) => state.getCheckedItems)
+
+  // 加载地址和优惠券
+  useEffect(() => {
+    loadData()
+  }, [])
+
+  const loadData = async () => {
+    try {
+      const [addrData, couponData] = await Promise.all([
+        getAddressList().catch(() => []),
+        getCouponList().catch(() => []),
+      ])
+
+      if (Array.isArray(addrData)) {
+        setAddresses(addrData)
+        // 默认选中第一个默认地址
+        const defaultAddr = addrData.find((a: any) => a.is_default || a.isDefault)
+        setSelectedAddress(defaultAddr || (addrData.length > 0 ? addrData[0] : null))
+      }
+
+      if (Array.isArray(couponData)) {
+        setCoupons(couponData)
+        setSelectedCoupon(couponData[0] || null)
+      }
+    } catch (error) {
+      console.error('加载数据失败:', error)
+    }
+  }
 
   // 判断是否为"立即购买"模式（只在首次计算）
   const buyNowItem = useMemo<BuyNowItem | null>(() => {
@@ -89,28 +121,65 @@ const OrderConfirmPage: React.FC = () => {
     )
   }, [sourceItems, qtyMap])
 
-  const coupon = mockCoupons[0]
-  const discount = totalAmount >= coupon.minAmount ? coupon.amount : 0
+  const coupon = selectedCoupon
+  const discount = (coupon && totalAmount >= (coupon.min_amount || coupon.minAmount)) ? (coupon.amount || 0) : 0
   const payAmount = totalAmount - discount
 
-  const handleSubmit = () => {
-    Taro.showLoading({ title: '提交中...' })
-    setTimeout(() => {
+  const handleSubmit = async () => {
+    if (!selectedAddress) {
+      Taro.showToast({ title: '请选择收货地址', icon: 'none' })
+      return
+    }
+
+    if (submitting) return
+
+    try {
+      setSubmitting(true)
+      Taro.showLoading({ title: '提交中...' })
+
+      // 构建订单数据
+      const orderData: any = {
+        source: buyNowItem ? 'buy_now' : 'cart',
+        address_id: selectedAddress.id,
+        remark,
+        coupon_id: selectedCoupon?.id,
+      }
+
+      if (buyNowItem) {
+        orderData.product_id = buyNowItem.productId
+        orderData.sku_id = buyNowItem.skuId
+        orderData.quantity = getQty(makeStableId(buyNowItem.productId, buyNowItem.skuId))
+      } else {
+        const checkedItems = getCheckedItems()
+        orderData.cart_ids = checkedItems.map((item) => item.id)
+      }
+
+      // 调用创建订单 API
+      const result = await createOrder(orderData)
+
       Taro.hideLoading()
-      Taro.redirectTo({ url: '/pages/pay-result/index?amount=' + payAmount + '&success=1' })
-    }, 1500)
+      Taro.redirectTo({
+        url: `/pages/pay-result/index?amount=${payAmount}&success=1&orderId=${result.order_id || result.id}`,
+      })
+    } catch (error) {
+      console.error('提交订单失败:', error)
+      Taro.hideLoading()
+      Taro.showToast({ title: '提交失败，请重试', icon: 'none' })
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
     <View className={styles.confirmPage}>
       {/* 地址 */}
-      <View className={styles.addressCard}>
-        {address ? (
+      <View className={styles.addressCard} onClick={() => Taro.navigateTo({ url: '/pages/address-list/index' })}>
+        {selectedAddress ? (
           <View className={styles.addressInfo}>
-            <Text className={styles.addressName}>{address.consignee}</Text>
-            <Text className={styles.addressMobile}>{address.mobile}</Text>
+            <Text className={styles.addressName}>{selectedAddress.consignee}</Text>
+            <Text className={styles.addressMobile}>{selectedAddress.mobile}</Text>
             <Text className={styles.addressDetail}>
-              {address.province}{address.city}{address.district}{address.detailAddress}
+              {selectedAddress.province}{selectedAddress.city}{selectedAddress.district}{selectedAddress.detail_address || selectedAddress.detailAddress}
             </Text>
           </View>
         ) : (

@@ -1,16 +1,95 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { View, Text, Image, Swiper, SwiperItem, ScrollView } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import styles from './index.module.scss'
 import ProductCard from '@/components/ProductCard'
 import { Banner, Category, Product } from '@/types'
-import { mockBanners, mockHomeCategories, mockHotProducts, mockNewProducts } from '@/data/home'
+import { getHomeData, getCategoryTree } from '@/api'
 
 const HomePage: React.FC = () => {
-  const [banners] = useState<Banner[]>(mockBanners)
-  const [categories] = useState<Category[]>(mockHomeCategories)
-  const [hotProducts] = useState<Product[]>(mockHotProducts)
-  const [newProducts] = useState<Product[]>(mockNewProducts)
+  const [banners, setBanners] = useState<Banner[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
+  const [hotProducts, setHotProducts] = useState<Product[]>([])
+  const [newProducts, setNewProducts] = useState<Product[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    loadHomeData()
+  }, [])
+
+  const loadHomeData = async () => {
+    try {
+      setLoading(true)
+      // 并行请求首页数据和分类
+      const [homeData, categoryData] = await Promise.all([
+        getHomeData(),
+        getCategoryTree(),
+      ])
+
+      // 转换轮播图格式
+      if (homeData.banners) {
+        setBanners(homeData.banners.map((b: any) => ({
+          id: b.id,
+          image: b.image,
+          url: '',
+          title: '',
+          sort: 0,
+        })))
+      }
+
+      // 转换分类格式
+      if (Array.isArray(categoryData)) {
+        setCategories(categoryData.filter((c: any) => c.parent_id === 0).map((c: any) => ({
+          id: c.id,
+          parentId: c.parent_id || 0,
+          name: c.name,
+          icon: c.icon || '',
+          sort: c.sort || 0,
+          status: c.status || 1,
+        })))
+      }
+
+      // 转换热门商品
+      if (homeData.hot_products) {
+        setHotProducts(homeData.hot_products.map((p: any) => ({
+          id: p.id,
+          categoryId: 0,
+          name: p.name,
+          subtitle: '',
+          coverImage: p.cover_image || p.coverImage,
+          content: '',
+          price: p.price,
+          originalPrice: 0,
+          salesCount: 0,
+          status: 1,
+          skus: [],
+          images: [],
+        })))
+      }
+
+      // 转换新品
+      if (homeData.new_products) {
+        setNewProducts(homeData.new_products.map((p: any) => ({
+          id: p.id,
+          categoryId: 0,
+          name: p.name,
+          subtitle: '',
+          coverImage: p.cover_image || p.coverImage,
+          content: '',
+          price: p.price,
+          originalPrice: 0,
+          salesCount: 0,
+          status: 1,
+          skus: [],
+          images: [],
+        })))
+      }
+    } catch (error) {
+      console.error('加载首页数据失败:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const handleSearch = () => {
     Taro.navigateTo({ url: '/pages/search/index' })
@@ -18,6 +97,21 @@ const HomePage: React.FC = () => {
 
   const handleCategoryClick = (cat: Category) => {
     Taro.navigateTo({ url: `/pages/product-list/index?categoryId=${cat.id}&name=${cat.name}` })
+  }
+
+  if (loading) {
+    return (
+      <View className={styles.homePage}>
+        <View className={styles.header}>
+          <View className={styles.searchBar} onClick={handleSearch}>
+            <Text className={styles.searchPlaceholder}>搜索商品</Text>
+          </View>
+        </View>
+        <View style={{ padding: '100px 0', textAlign: 'center' }}>
+          <Text>加载中...</Text>
+        </View>
+      </View>
+    )
   }
 
   return (

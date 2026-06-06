@@ -3,25 +3,61 @@ import { View, Text, Input } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import styles from './index.module.scss'
 import ProductCard from '@/components/ProductCard'
-import { mockProductList } from '@/data/product'
+import { Product } from '@/types'
+import { searchProducts } from '@/api'
 
 const hotSearch = ['连衣裙', '口红', '耳机', '男装夹克', '台灯', '坚果礼盒', '美白精华', '碎花裙']
 
 const SearchPage: React.FC = () => {
   const [keyword, setKeyword] = useState('')
   const [showResult, setShowResult] = useState(false)
+  const [products, setProducts] = useState<Product[]>([])
+  const [searching, setSearching] = useState(false)
 
-  const handleSearch = () => {
+  const handleSearch = async () => {
     if (!keyword.trim()) {
       Taro.showToast({ title: '请输入搜索关键词', icon: 'none' })
       return
     }
-    setShowResult(true)
+
+    try {
+      setSearching(true)
+      setShowResult(true)
+
+      const data = await searchProducts(keyword, 1, 20)
+
+      if (data?.list && Array.isArray(data.list)) {
+        setProducts(
+          data.list.map((p: any) => ({
+            id: p.id,
+            categoryId: p.category_id || 0,
+            name: p.name || '',
+            subtitle: p.subtitle || '',
+            coverImage: p.cover_image || p.coverImage || '',
+            content: p.content || '',
+            price: p.price || 0,
+            originalPrice: p.original_price || p.originalPrice || 0,
+            salesCount: p.sales_count || p.salesCount || 0,
+            status: p.status || 1,
+            skus: [],
+            images: [],
+          }))
+        )
+      } else {
+        setProducts([])
+      }
+    } catch (error) {
+      console.error('搜索失败:', error)
+      setProducts([])
+    } finally {
+      setSearching(false)
+    }
   }
 
   const handleHotTag = (tag: string) => {
     setKeyword(tag)
-    setShowResult(true)
+    // 自动触发搜索
+    setTimeout(() => handleSearch(), 100)
   }
 
   return (
@@ -39,11 +75,21 @@ const SearchPage: React.FC = () => {
 
       {showResult ? (
         <View className={styles.productList}>
-          <View className={styles.productGrid}>
-            {mockProductList.slice(0, 6).map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </View>
+          {searching ? (
+            <View style={{ padding: '50px 0', textAlign: 'center' }}>
+              <Text>搜索中...</Text>
+            </View>
+          ) : products.length === 0 ? (
+            <View style={{ padding: '50px 0', textAlign: 'center' }}>
+              <Text>未找到相关商品</Text>
+            </View>
+          ) : (
+            <View className={styles.productGrid}>
+              {products.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </View>
+          )}
         </View>
       ) : (
         <>

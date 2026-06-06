@@ -1,11 +1,16 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { View, Text, Image } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import styles from './index.module.scss'
-import { mockUserInfo } from '@/data/user'
 
 const MinePage: React.FC = () => {
-  const user = mockUserInfo
+  // 用户信息（后续可从 API 或登录状态获取）
+  const [user] = useState({
+    id: 1,
+    nickname: '微信用户',
+    avatar: 'https://picsum.photos/id/64/200/200',
+    mobile: '138****8888',
+  })
 
   const handleNav = (url: string) => {
     Taro.navigateTo({ url })
