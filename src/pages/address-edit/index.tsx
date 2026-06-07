@@ -1,29 +1,74 @@
 import React, { useState, useEffect } from 'react'
-import { View, Text, Input } from '@tarojs/components'
+import { View, Text, Input, Picker } from '@tarojs/components'
 import Taro, { useRouter } from '@tarojs/taro'
 import classnames from 'classnames'
 import styles from './index.module.scss'
-import { createAddress, updateAddress } from '@/api'
+import { createAddress, updateAddress, getAddressDetail } from '@/api'
 
 const AddressEditPage: React.FC = () => {
   const router = useRouter()
   const [consignee, setConsignee] = useState('')
   const [mobile, setMobile] = useState('')
+  const [province, setProvince] = useState('')
+  const [city, setCity] = useState('')
+  const [district, setDistrict] = useState('')
   const [detail, setDetail] = useState('')
   const [isDefault, setIsDefault] = useState(false)
   const [saving, setSaving] = useState(false)
 
+  const [loading, setLoading] = useState(false)
+
+  // 地区选择器值，格式 [省, 市, 区]
+  const regionValue = province ? [province, city, district] : []
+
+  const handleRegionChange = (e: any) => {
+    const [selProvince, selCity, selDistrict] = e.detail.value
+    setProvince(selProvince)
+    setCity(selCity)
+    setDistrict(selDistrict)
+  }
+
   useEffect(() => {
     // 如果有 id 参数，表示编辑模式，需要加载地址详情
     if (router.params?.id) {
-      // TODO: 从 API 加载地址详情
-      console.log('Edit address id:', router.params.id)
+      const id = Number(router.params.id)
+      if (!id) return
+
+      setLoading(true)
+      getAddressDetail(id)
+        .then((addr: any) => {
+          if (!addr) return
+          setConsignee(addr.consignee || '')
+          setMobile(addr.mobile || '')
+          setProvince(addr.province || '')
+          setCity(addr.city || '')
+          setDistrict(addr.district || '')
+          setDetail(addr.detail_address || addr.detailAddress || '')
+          setIsDefault(!!(addr.is_default || addr.isDefault))
+        })
+        .catch((error) => {
+          console.error('加载地址详情失败:', error)
+          Taro.showToast({ title: '加载地址失败', icon: 'none' })
+        })
+        .finally(() => {
+          setLoading(false)
+        })
     }
   }, [])
 
   const handleSave = async () => {
-    if (!consignee || !mobile || !detail) {
+    if (!consignee || !mobile) {
       Taro.showToast({ title: '请填写完整信息', icon: 'none' })
+      return
+    }
+
+    if (!province) {
+      Taro.showToast({ title: '请选择所在地区', icon: 'none' })
+      return
+    }
+
+    if (!detail) {
+      Taro.showToast({ title: '请填写详细地址', icon: 'none' })
       return
     }
 
@@ -41,9 +86,9 @@ const AddressEditPage: React.FC = () => {
       const addressData = {
         consignee,
         mobile,
-        province: '', // TODO: 需要地区选择器
-        city: '',
-        district: '',
+        province,
+        city,
+        district,
         detail_address: detail,
         is_default: isDefault ? 1 : 0,
       }
@@ -96,7 +141,11 @@ const AddressEditPage: React.FC = () => {
         </View>
         <View className={styles.formItem}>
           <Text className={styles.label}>所在地区</Text>
-          <Input className={`${styles.input} ${styles.placeholder}`} placeholder='请选择省市区' disabled />
+          <Picker mode='region' value={regionValue} onChange={handleRegionChange}>
+            <View className={`${styles.input} ${!province ? styles.placeholder : ''}`}>
+              {province ? `${province} ${city} ${district}` : '请选择省市区'}
+            </View>
+          </Picker>
         </View>
         <View className={styles.formItem}>
           <Text className={styles.label}>详细地址</Text>

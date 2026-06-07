@@ -34,6 +34,12 @@ export class Order {
   @Column({ type: 'tinyint', default: 0 })
   order_status: number;
 
+  @Column({ nullable: true })
+  coupon_id: number;
+
+  @Column({ nullable: true })
+  user_coupon_id: number;
+
   @Column({ type: 'json', nullable: true })
   address_snapshot: object;
 

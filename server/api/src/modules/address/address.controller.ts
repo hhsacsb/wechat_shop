@@ -17,6 +17,11 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 export class AddressController {
   constructor(private readonly addressService: AddressService) {}
 
+  @Get('detail')
+  getDetail(@Request() req, @Query('id') id: string) {
+    return this.addressService.getDetail(req.user.userId, Number(id));
+  }
+
   @Get('list')
   getList(@Request() req) {
     return this.addressService.getList(req.user.userId);

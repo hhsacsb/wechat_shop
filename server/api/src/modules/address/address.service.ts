@@ -10,6 +10,10 @@ export class AddressService {
     private addressRepository: Repository<Address>,
   ) {}
 
+  async getDetail(userId: number, id: number) {
+    return this.addressRepository.findOne({ where: { id, user_id: userId } });
+  }
+
   async getList(userId: number) {
     return this.addressRepository.find({
       where: { user_id: userId },

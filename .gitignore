@@ -39,3 +39,4 @@ npm-debug.log*
 
 # Package lock (keep only one)
 package-lock.json
+数据库结构.sql

@@ -28,16 +28,33 @@ const CategoryPage: React.FC = () => {
       setLoading(true)
       const data = await getCategoryTree()
 
-      // 转换分类格式
+      // 转换分类格式：展平树结构，将子分类也存入数组
       if (Array.isArray(data)) {
-        const allCats = data.map((c: any) => ({
-          id: c.id,
-          parentId: c.parent_id || 0,
-          name: c.name,
-          icon: c.icon || '',
-          sort: c.sort || 0,
-          status: c.status || 1,
-        }))
+        const allCats: any[] = []
+        data.forEach((c: any) => {
+          // 父分类
+          allCats.push({
+            id: c.id,
+            parentId: 0,
+            name: c.name,
+            icon: c.icon || '',
+            sort: c.sort || 0,
+            status: c.status || 1,
+          })
+          // 子分类
+          if (c.children && Array.isArray(c.children)) {
+            c.children.forEach((child: any) => {
+              allCats.push({
+                id: child.id,
+                parentId: c.id,
+                name: child.name,
+                icon: child.icon || '',
+                sort: child.sort || 0,
+                status: 1,
+              })
+            })
+          }
+        })
         setCategories(allCats)
       }
     } catch (error) {

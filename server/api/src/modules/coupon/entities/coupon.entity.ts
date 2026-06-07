@@ -32,6 +32,9 @@ export class Coupon {
   @Column({ type: 'int', default: 0 })
   total_count: number;
 
+  @Column({ type: 'int', default: 0 })
+  used_count: number;
+
   @Column({ type: 'tinyint', default: 1 })
   status: number;
 

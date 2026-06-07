@@ -5,6 +5,7 @@ interface CategoryItem {
   id: number
   parent_id: number
   name: string
+  icon: string
   sort: number
   status: number
 }
@@ -96,6 +97,12 @@ const CategoryListPage: React.FC = () => {
   const columns = [
     { title: 'ID', dataIndex: 'id', width: 80 },
     { title: '分类名称', dataIndex: 'name' },
+    {
+      title: '图标',
+      dataIndex: 'icon',
+      width: 120,
+      render: (v: string) => v ? <img src={v} alt="" style={{ width: 48, height: 48, borderRadius: 8, objectFit: 'cover' }} /> : '-',
+    },
     { title: '父级ID', dataIndex: 'parent_id', width: 80 },
     { title: '排序', dataIndex: 'sort', width: 80 },
     {
@@ -138,6 +145,9 @@ const CategoryListPage: React.FC = () => {
         <Form form={form} layout="vertical">
           <Form.Item name="name" label="分类名称" rules={[{ required: true, message: '请输入分类名称' }]}>
             <Input placeholder="请输入分类名称" />
+          </Form.Item>
+          <Form.Item name="icon" label="图标链接">
+            <Input placeholder="请输入图标图片 URL" />
           </Form.Item>
           <Form.Item name="parent_id" label="父级分类">
             <Select placeholder="无则不选（顶级分类）">

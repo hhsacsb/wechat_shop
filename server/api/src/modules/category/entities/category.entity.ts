@@ -17,6 +17,9 @@ export class Category {
   @Column({ length: 100 })
   name: string;
 
+  @Column({ length: 255, default: '' })
+  icon: string;
+
   @Column({ type: 'int', default: 0 })
   sort: number;
 

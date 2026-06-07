@@ -1,5 +1,8 @@
 import { api } from '@/services/request'
 
+/** 获取地址详情 */
+export const getAddressDetail = (id: number) => api.get<any>(`/api/address/detail?id=${id}`)
+
 /** 获取地址列表 */
 export const getAddressList = () => api.get<any[]>('/api/address/list')
 

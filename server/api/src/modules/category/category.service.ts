@@ -20,10 +20,14 @@ export class CategoryService {
     const parentCategories = categories.filter((c) => c.parent_id === 0);
     return parentCategories.map((parent) => ({
       id: parent.id,
+      parent_id: parent.parent_id,
       name: parent.name,
+      icon: parent.icon,
+      sort: parent.sort,
+      status: parent.status,
       children: categories
         .filter((child) => child.parent_id === parent.id)
-        .map((child) => ({ id: child.id, name: child.name })),
+        .map((child) => ({ id: child.id, name: child.name, icon: child.icon })),
     }));
   }
 
@@ -42,10 +46,11 @@ export class CategoryService {
   }
 
   /** 新增分类 */
-  async create(data: { parent_id?: number; name: string; sort?: number; status?: number }) {
+  async create(data: { parent_id?: number; name: string; icon?: string; sort?: number; status?: number }) {
     const category = this.categoryRepository.create({
       parent_id: data.parent_id ?? 0,
       name: data.name,
+      icon: data.icon ?? '',
       sort: data.sort ?? 0,
       status: data.status ?? 1,
     });
@@ -54,7 +59,7 @@ export class CategoryService {
   }
 
   /** 编辑分类 */
-  async update(data: { id: number; name?: string; sort?: number; status?: number }) {
+  async update(data: { id: number; name?: string; icon?: string; sort?: number; status?: number }) {
     const { id, ...updateData } = data;
     const existing = await this.categoryRepository.findOne({ where: { id } });
     if (!existing) throw new Error('分类不存在');

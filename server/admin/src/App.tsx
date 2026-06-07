@@ -9,6 +9,7 @@ import OrderDetailPage from './pages/OrderDetail'
 import UserListPage from './pages/UserList'
 import AfterSaleListPage from './pages/AfterSaleList'
 import CouponListPage from './pages/CouponList'
+import CouponFormPage from './pages/CouponForm'
 import BannerListPage from './pages/BannerList'
 import BannerFormPage from './pages/BannerForm'
 
@@ -30,6 +31,8 @@ function App() {
         <Route path="users" element={<UserListPage />} />
         <Route path="after-sales" element={<AfterSaleListPage />} />
         <Route path="coupons" element={<CouponListPage />} />
+        <Route path="coupons/add" element={<CouponFormPage />} />
+        <Route path="coupons/edit/:id" element={<CouponFormPage />} />
       </Route>
     </Routes>
   )

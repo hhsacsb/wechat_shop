@@ -3,7 +3,7 @@ import { View, Text, Image, Swiper, SwiperItem, ScrollView } from '@tarojs/compo
 import Taro, { useRouter } from '@tarojs/taro'
 import classnames from 'classnames'
 import styles from './index.module.scss'
-import { getProductDetail } from '@/api'
+import { getProductDetail, addToCart } from '@/api'
 import { useCartStore } from '@/store/cart'
 import { Product, Sku, CartItem } from '@/types'
 
@@ -15,6 +15,7 @@ const ProductDetailPage: React.FC = () => {
   const [added, setAdded] = useState(false)
   const [loading, setLoading] = useState(true)
   const addItem = useCartStore((state) => state.addItem)
+  const fetchCart = useCartStore((state) => state.fetchCart)
 
   useEffect(() => {
     if (router.params?.id) {
@@ -72,11 +73,32 @@ const ProductDetailPage: React.FC = () => {
 
     try {
       // 调用后端 API 加入购物车
-      const { addToCart } = require('@/api')
       await addToCart({
         product_id: product.id,
         sku_id: selectedSku.id,
         quantity,
+      })
+
+      // 乐观更新本地 store：让 cart 页面（或 tabbar 角标）能立即看到新加的商品，
+      // 即便后端 list 接口暂时读不到也不影响体验。
+      // 使用 Date.now() 作临时 id，fetchCart 拉回服务端真实 id 后会自然覆盖。
+      addItem({
+        id: Date.now(),
+        userId: 1,
+        productId: product.id,
+        skuId: selectedSku.id,
+        quantity,
+        checked: true,
+        productName: product.name,
+        skuDesc: selectedSku.specValue,
+        price: selectedSku.price,
+        coverImage: product.coverImage,
+        stock: selectedSku.stock,
+      })
+
+      // 静默与服务器对账：失败也不影响用户已看到的本地结果
+      fetchCart().catch((e) => {
+        console.warn('[ProductDetail] 加入购物车后静默拉取失败:', e)
       })
 
       setAdded(true)

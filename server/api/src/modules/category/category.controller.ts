@@ -19,13 +19,13 @@ export class CategoryController {
 
   /** 新增分类 */
   @Post('create')
-  create(@Body() body: { parent_id?: number; name: string; sort?: number; status?: number }) {
+  create(@Body() body: { parent_id?: number; name: string; icon?: string; sort?: number; status?: number }) {
     return this.categoryService.create(body);
   }
 
   /** 编辑分类 */
   @Put('update')
-  update(@Body() body: { id: number; name?: string; sort?: number; status?: number }) {
+  update(@Body() body: { id: number; name?: string; icon?: string; sort?: number; status?: number }) {
     return this.categoryService.update(body);
   }
 

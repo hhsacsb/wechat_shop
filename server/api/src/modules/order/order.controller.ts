@@ -29,6 +29,7 @@ export class OrderController {
     source: string;
     address_id: number;
     coupon_id?: number;
+    user_coupon_id?: number;
     remark?: string;
     cart_ids?: number[];
     product_id?: number;

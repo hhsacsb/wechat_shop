@@ -73,7 +73,7 @@ const ProductFormPage: React.FC = () => {
           name: data.name,
           subtitle: data.subtitle,
           cover_image: data.cover_image,
-          content: data.detail_html,
+          content: data.content,
           price: data.price,
           original_price: data.original_price,
           status: data.status,
@@ -82,10 +82,10 @@ const ProductFormPage: React.FC = () => {
         if (data.images && Array.isArray(data.images)) {
           setImageUrls(data.images)
         }
-        if (data.sku_list) {
+        if (data.skus) {
           setSkuList(
-            data.sku_list.map((s: any) => ({
-              id: s.sku_id,
+            data.skus.map((s: any) => ({
+              id: s.id,
               sku_code: s.sku_code,
               spec_value: s.spec_value,
               price: s.price,

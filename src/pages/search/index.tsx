@@ -63,14 +63,16 @@ const SearchPage: React.FC = () => {
   return (
     <View className={styles.searchPage}>
       <View className={styles.searchInput}>
-        <Input
-          placeholder='搜索商品名称'
-          value={keyword}
-          onInput={(e) => setKeyword(e.detail.value)}
-          onConfirm={handleSearch}
-          confirmType='search'
-        />
-        <Text className={styles.searchBtn} onClick={handleSearch}>搜索</Text>
+        <View className={styles.searchInputBox}>
+          <Input
+            placeholder='搜索商品名称'
+            value={keyword}
+            onInput={(e) => setKeyword(e.detail.value)}
+            onConfirm={handleSearch}
+            confirmType='search'
+          />
+        </View>
+        <View className={styles.searchBtn} onClick={handleSearch}>搜索</View>
       </View>
 
       {showResult ? (

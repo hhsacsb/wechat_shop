@@ -1,6 +1,6 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { View, Text, Image, Checkbox } from '@tarojs/components'
-import Taro from '@tarojs/taro'
+import Taro, { useDidShow } from '@tarojs/taro'
 import styles from './index.module.scss'
 import EmptyState from '@/components/EmptyState'
 import { useCartStore } from '@/store/cart'
@@ -8,9 +8,11 @@ import { useCartStore } from '@/store/cart'
 const CartPage: React.FC = () => {
   const { items, fetchCart, updateQuantity, toggleCheck, toggleCheckAll, removeItem, getTotalAmount, getTotalCount } = useCartStore()
 
-  useEffect(() => {
+  // 使用 useDidShow 替代 useEffect：从其他页面（结算完成、详情页等）返回购物车时
+  // 都能重新拉取最新数据，保证与服务端一致。
+  useDidShow(() => {
     fetchCart()
-  }, [fetchCart])
+  })
 
   const allChecked = items.length > 0 && items.every((item) => item.checked)
 

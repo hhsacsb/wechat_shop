@@ -12,6 +12,8 @@ interface CartState {
   toggleCheck: (id: number) => void
   toggleCheckAll: (checked: boolean) => void
   removeItem: (id: number) => Promise<void>
+  /** 同步清除本地购物车中所有已勾选的商品（订单创建成功后调用） */
+  removeCheckedItems: () => number[]
   getCheckedItems: () => CartItem[]
   getTotalAmount: () => number
   getTotalCount: () => number
@@ -122,6 +124,23 @@ export const useCartStore = create<CartState>((set, get) => ({
       // API 失败时可以重新加载购物车
       get().fetchCart()
     }
+  },
+
+  /**
+   * 同步移除本地购物车中所有已勾选的商品。
+   * 用于订单创建成功后：调用方先调本方法拿到被移除的 ids，
+   * 再用这些 ids 调 api.deleteCartItems 删除服务端数据。
+   * 返回被移除的购物车项 id 列表。
+   */
+  removeCheckedItems: () => {
+    const removed = get()
+      .items.filter((item) => item.checked)
+      .map((item) => item.id)
+    if (removed.length === 0) return removed
+    set((state) => ({
+      items: state.items.filter((item) => !item.checked),
+    }))
+    return removed
   },
 
   getCheckedItems: () => {

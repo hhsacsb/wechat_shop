@@ -1,8 +1,14 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { Order } from './entities/order.entity';
 import { OrderItem } from './entities/order-item.entity';
+import { ProductSku } from '../product/entities/product-sku.entity';
+import { Product } from '../product/entities/product.entity';
+import { Cart } from '../cart/entities/cart.entity';
+import { Coupon } from '../coupon/entities/coupon.entity';
+import { UserCoupon } from '../coupon/entities/user-coupon.entity';
+import { Address } from '../address/entities/address.entity';
 
 /** 订单状态枚举 */
 const ORDER_STATUS = {
@@ -20,6 +26,18 @@ export class OrderService {
     private orderRepository: Repository<Order>,
     @InjectRepository(OrderItem)
     private orderItemRepository: Repository<OrderItem>,
+    @InjectRepository(ProductSku)
+    private skuRepository: Repository<ProductSku>,
+    @InjectRepository(Product)
+    private productRepository: Repository<Product>,
+    @InjectRepository(Cart)
+    private cartRepository: Repository<Cart>,
+    @InjectRepository(Coupon)
+    private couponRepository: Repository<Coupon>,
+    @InjectRepository(UserCoupon)
+    private userCouponRepository: Repository<UserCoupon>,
+    @InjectRepository(Address)
+    private addressRepository: Repository<Address>,
   ) {}
 
   // ========== 用户端方法 ==========
@@ -38,6 +56,7 @@ export class OrderService {
     source: string;
     address_id: number;
     coupon_id?: number;
+    user_coupon_id?: number;
     remark?: string;
     cart_ids?: number[];
     product_id?: number;
@@ -46,19 +65,160 @@ export class OrderService {
   }) {
     const orderNo = `SO${new Date().toISOString().replace(/[-:T.]/g, '').slice(0, 14)}${String(Math.floor(Math.random() * 1000)).padStart(4, '0')}`;
 
+    // 1. 根据 source 类型计算订单金额和商品明细
+    const items: Array<{
+      product_id: number;
+      sku_id: number;
+      product_name: string;
+      sku_desc: string;
+      price: number;
+      quantity: number;
+      amount: number;
+    }> = [];
+    let totalAmount = 0;
+
+    if (data.source === 'buy_now') {
+      // 立即购买：查询 SKU 和商品信息
+      if (!data.sku_id || !data.product_id || !data.quantity) {
+        throw new BadRequestException('缺少商品信息');
+      }
+
+      const sku = await this.skuRepository.findOne({ where: { id: data.sku_id } });
+      if (!sku) throw new BadRequestException('SKU 不存在');
+
+      const product = await this.productRepository.findOne({ where: { id: data.product_id } });
+      if (!product) throw new BadRequestException('商品不存在');
+
+      const amount = Number(sku.price) * data.quantity;
+      totalAmount = amount;
+
+      items.push({
+        product_id: data.product_id,
+        sku_id: data.sku_id,
+        product_name: product.name,
+        sku_desc: sku.spec_value,
+        price: Number(sku.price),
+        quantity: data.quantity,
+        amount,
+      });
+    } else if (data.source === 'cart') {
+      // 购物车结算：查询购物车商品
+      if (!data.cart_ids?.length) {
+        throw new BadRequestException('请选择要结算的商品');
+      }
+
+      const cartItems = await this.cartRepository.find({
+        where: { id: In(data.cart_ids), user_id: userId },
+      });
+
+      if (!cartItems.length) {
+        throw new BadRequestException('购物车商品不存在');
+      }
+
+      // 批量查询 SKU 和商品信息
+      const skuIds = cartItems.map((c) => c.sku_id);
+      const productIds = cartItems.map((c) => c.product_id);
+      const skuMap = new Map(
+        (await this.skuRepository.findBy({ id: In(skuIds) })).map((s) => [s.id, s]),
+      );
+      const productMap = new Map(
+        (await this.productRepository.findBy({ id: In(productIds) })).map((p) => [p.id, p]),
+      );
+
+      for (const cart of cartItems) {
+        const sku = skuMap.get(cart.sku_id);
+        const product = productMap.get(cart.product_id);
+        const amount = Number(cart.price) * cart.quantity;
+        totalAmount += amount;
+
+        items.push({
+          product_id: cart.product_id,
+          sku_id: cart.sku_id,
+          product_name: product?.name || '',
+          sku_desc: sku?.spec_value || '',
+          price: Number(cart.price),
+          quantity: cart.quantity,
+          amount,
+        });
+      }
+    } else {
+      throw new BadRequestException('无效的订单来源');
+    }
+
+    // 2. 计算优惠金额
+    let discountAmount = 0;
+    let actualCouponId: number | undefined;
+    let actualUserCouponId: number | undefined;
+
+    if (data.user_coupon_id) {
+      const uc = await this.userCouponRepository.findOne({
+        where: { id: data.user_coupon_id, user_id: userId, status: 0 },
+      });
+      if (uc) {
+        const coupon = await this.couponRepository.findOne({ where: { id: uc.coupon_id } });
+        if (coupon && coupon.status === 1 && totalAmount >= Number(coupon.min_amount)) {
+          discountAmount = Number(coupon.amount);
+          actualCouponId = coupon.id;
+          actualUserCouponId = uc.id;
+        }
+      }
+    } else if (data.coupon_id) {
+      const coupon = await this.couponRepository.findOne({ where: { id: data.coupon_id } });
+      if (coupon && totalAmount >= Number(coupon.min_amount)) {
+        discountAmount = Number(coupon.amount);
+        actualCouponId = coupon.id;
+      }
+    }
+
+    const payAmount = totalAmount - discountAmount;
+
+    // 3. 获取地址快照
+    const address = await this.addressRepository.findOne({ where: { id: data.address_id } });
+    const addressSnapshot = address
+      ? {
+          consignee: address.consignee,
+          mobile: address.mobile,
+          province: address.province,
+          city: address.city,
+          district: address.district,
+          detailAddress: address.detail_address,
+        }
+      : {};
+
+    // 4. 创建订单
     const order = this.orderRepository.create({
       order_no: orderNo,
       user_id: userId,
-      total_amount: 0,
-      discount_amount: 0,
-      pay_amount: 0,
+      total_amount: totalAmount,
+      discount_amount: discountAmount,
+      pay_amount: payAmount,
       order_status: ORDER_STATUS.PENDING_PAYMENT,
       pay_status: 0,
+      coupon_id: actualCouponId,
+      user_coupon_id: actualUserCouponId,
       remark: data.remark,
-      address_snapshot: {},
+      address_snapshot: addressSnapshot as object,
     });
 
     const savedOrder = await this.orderRepository.save(order);
+
+    // 5. 保存订单商品明细
+    if (items.length > 0) {
+      const orderItems = items.map((item) =>
+        this.orderItemRepository.create({ order_id: savedOrder.id, ...item }),
+      );
+      await this.orderItemRepository.save(orderItems);
+    }
+
+    // 6. 标记优惠券已使用
+    if (actualUserCouponId) {
+      await this.userCouponRepository.update(actualUserCouponId, { status: 1, used_at: new Date() });
+    }
+
+    // 7. 购物车结算后清除已购商品
+    if (data.source === 'cart' && data.cart_ids?.length) {
+      await this.cartRepository.delete({ id: In(data.cart_ids), user_id: userId });
+    }
 
     return {
       order_id: savedOrder.id,

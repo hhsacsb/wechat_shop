@@ -128,13 +128,14 @@ export class ProductService {
       sales_count: product.sales_count,
       cover_image: product.cover_image,
       images: imageList,
-      detail_html: product.content,
-      sku_list: skus.map((sku) => ({
-        sku_id: sku.id,
+      content: product.content,
+      skus: skus.map((sku) => ({
+        id: sku.id,
         sku_code: sku.sku_code,
         spec_value: sku.spec_value,
         price: sku.price,
         stock: sku.stock,
+        image: sku.image || '',
       })),
     };
   }

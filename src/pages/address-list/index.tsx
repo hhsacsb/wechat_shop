@@ -9,6 +9,9 @@ const AddressListPage: React.FC = () => {
   const [addresses, setAddresses] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
+  // 判断是否为选择模式
+  const isSelectMode = Taro.getCurrentInstance().router?.params?.select === '1'
+
   useEffect(() => {
     loadAddresses()
   }, [])
@@ -45,6 +48,12 @@ const AddressListPage: React.FC = () => {
     }
   }
 
+  // 选择模式：点击地址卡片 -> 存储选中地址并返回
+  const handleSelectAddress = (addr: any) => {
+    Taro.setStorageSync('selectedAddress', addr)
+    Taro.navigateBack()
+  }
+
   if (loading) {
     return (
       <View className={styles.page} style={{ padding: '100px 0', textAlign: 'center' }}>
@@ -59,7 +68,11 @@ const AddressListPage: React.FC = () => {
         <EmptyState title='暂无收货地址' description='请添加收货地址' />
       ) : (
         addresses.map((addr) => (
-          <View key={addr.id} className={styles.addressCard}>
+          <View
+            key={addr.id}
+            className={styles.addressCard}
+            onClick={isSelectMode ? () => handleSelectAddress(addr) : undefined}
+          >
             <Text>
               <Text className={styles.addressName}>{addr.consignee}</Text>
               <Text className={styles.addressMobile}>{addr.mobile}</Text>
@@ -68,18 +81,22 @@ const AddressListPage: React.FC = () => {
             <Text className={styles.addressDetail}>
               {addr.province}{addr.city}{addr.district}{addr.detail_address || addr.detailAddress}
             </Text>
-            <View className={styles.addressActions}>
-              <Text className={styles.actionText} onClick={() => Taro.navigateTo({ url: `/pages/address-edit/index?id=${addr.id}` })}>编辑</Text>
-              <Text className={styles.actionText} onClick={() => handleDelete(addr.id)}>删除</Text>
-              {!(addr.is_default || addr.isDefault) && <Text className={styles.actionText}>设为默认</Text>}
-            </View>
+            {!isSelectMode && (
+              <View className={styles.addressActions}>
+                <Text className={styles.actionText} onClick={() => Taro.navigateTo({ url: `/pages/address-edit/index?id=${addr.id}` })}>编辑</Text>
+                <Text className={styles.actionText} onClick={() => handleDelete(addr.id)}>删除</Text>
+                {!(addr.is_default || addr.isDefault) && <Text className={styles.actionText}>设为默认</Text>}
+              </View>
+            )}
           </View>
         ))
       )}
 
-      <View className={styles.addBtn}>
-        <View className={styles.addBtnInner} onClick={handleAdd}>新增地址</View>
-      </View>
+      {!isSelectMode && (
+        <View className={styles.addBtn}>
+          <View className={styles.addBtnInner} onClick={handleAdd}>新增地址</View>
+        </View>
+      )}
     </View>
   )
 }

@@ -85,7 +85,7 @@ const OrderDetailPage: React.FC = () => {
     )
   }
 
-  const address = order.addressSnapshot ? JSON.parse(order.addressSnapshot as string) : null
+  const address = order.addressSnapshot as Record<string, any> | null
 
   const handleCancel = async () => {
     try {

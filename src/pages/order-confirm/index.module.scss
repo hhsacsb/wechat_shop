@@ -150,9 +150,20 @@
   color: $color-text-primary;
 }
 
+.couponValueWrap {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
 .couponValue {
   font-size: $font-size-md;
   color: $color-primary;
+}
+
+.couponArrow {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
 }
 
 // 备注
@@ -250,4 +261,225 @@
     opacity: 0.9;
     transform: scale(0.98);
   }
+}
+
+// 优惠券选择弹窗
+.popupOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.popupContent {
+  background: $color-bg-card;
+  border-radius: $radius-xl $radius-xl 0 0;
+  width: 100%;
+  max-height: 75vh;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.3s ease;
+  position: relative;
+}
+
+// 拖拽指示条
+.popupDragHandle {
+  width: 48rpx;
+  height: 6rpx;
+  border-radius: 3rpx;
+  background: $color-border;
+  margin: $spacing-sm auto 0;
+}
+
+.popupHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $spacing-lg $page-padding;
+}
+
+.popupTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.popupClose {
+  width: 52rpx;
+  height: 52rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: $radius-round;
+  background: $color-bg-page;
+  color: $color-text-tertiary;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  line-height: 1;
+
+  &:active {
+    background: $color-divider;
+  }
+}
+
+.popupList {
+  overflow-y: auto;
+  flex: 1;
+  padding: 0 $page-padding $spacing-lg;
+}
+
+// 不使用优惠券选项
+.popupNoCoupon {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  border-radius: $radius-md;
+  border: 2rpx solid $color-border;
+
+  &:active {
+    background: $color-bg-hover;
+  }
+}
+
+.popupNoCouponActive {
+  border-color: $color-primary;
+  background: rgba($color-primary, 0.04);
+}
+
+.popupNoCouponText {
+  font-size: $font-size-md;
+  color: $color-text-primary;
+}
+
+.popupNoCouponIcon {
+  width: 32rpx;
+  height: 32rpx;
+  border-radius: $radius-round;
+  border: 2rpx solid $color-border;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .popupNoCouponActive & {
+    border-color: $color-primary;
+    background: $color-primary;
+
+    &::after {
+      content: '';
+      width: 10rpx;
+      height: 10rpx;
+      border-radius: $radius-round;
+      background: $color-text-white;
+    }
+  }
+}
+
+.popupItem {
+  display: flex;
+  align-items: center;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  background: linear-gradient(135deg, #FFF9F8 0%, #FFF5F3 100%);
+  border-radius: $radius-md;
+  border: 2rpx solid transparent;
+  position: relative;
+  overflow: hidden;
+
+  // 左侧装饰条
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 8rpx;
+    background: linear-gradient(180deg, $color-primary 0%, $color-primary-light 100%);
+    border-radius: 0 4rpx 4rpx 0;
+  }
+
+  &:active {
+    opacity: 0.85;
+    transform: scale(0.98);
+  }
+}
+
+.popupItemActive {
+  border-color: $color-primary;
+  box-shadow: 0 4rpx 16rpx rgba($color-primary, 0.15);
+
+  &::after {
+    content: '✓';
+    position: absolute;
+    top: $spacing-sm;
+    right: $spacing-sm;
+    width: 32rpx;
+    height: 32rpx;
+    background: $color-primary;
+    color: $color-text-white;
+    font-size: 20rpx;
+    font-weight: $font-weight-bold;
+    border-radius: $radius-round;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 32rpx;
+    text-align: center;
+  }
+}
+
+.popupItemInfo {
+  flex: 1;
+  margin-left: $spacing-sm;
+}
+
+.popupItemName {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.popupItemDesc {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  margin-top: $spacing-xs;
+}
+
+.popupItemTime {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-top: $spacing-xs;
+}
+
+.popupItemAmount {
+  font-size: $font-size-xl;
+  color: $color-price;
+  font-weight: $font-weight-bold;
+  margin-left: $spacing-lg;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.popupEmpty {
+  text-align: center;
+  padding: $spacing-xl * 2 $spacing-xl;
+  color: $color-text-tertiary;
+  font-size: $font-size-md;
 }

@@ -37,9 +37,9 @@ const HomePage: React.FC = () => {
         })))
       }
 
-      // 转换分类格式
+      // 转换分类格式（后端已返回顶级分类）
       if (Array.isArray(categoryData)) {
-        setCategories(categoryData.filter((c: any) => c.parent_id === 0).map((c: any) => ({
+        setCategories(categoryData.map((c: any) => ({
           id: c.id,
           parentId: c.parent_id || 0,
           name: c.name,
@@ -102,11 +102,6 @@ const HomePage: React.FC = () => {
   if (loading) {
     return (
       <View className={styles.homePage}>
-        <View className={styles.header}>
-          <View className={styles.searchBar} onClick={handleSearch}>
-            <Text className={styles.searchPlaceholder}>搜索商品</Text>
-          </View>
-        </View>
         <View style={{ padding: '100px 0', textAlign: 'center' }}>
           <Text>加载中...</Text>
         </View>
@@ -116,14 +111,20 @@ const HomePage: React.FC = () => {
 
   return (
     <View className={styles.homePage}>
-      {/* 顶部搜索栏 */}
-      <View className={styles.header}>
-        <View className={styles.searchBar} onClick={handleSearch}>
+      <ScrollView scrollY className={styles.scrollContent} enhanced showScrollbar={false}>
+        {/* 搜索框（放在 banner 上面） */}
+        <View
+          className={styles.searchBar}
+          hoverClass={styles.searchBarHover}
+          onClick={(e) => {
+            // 阻止事件冒泡到 ScrollView，避免被滚动判断吞掉点击
+            e.stopPropagation()
+            handleSearch()
+          }}
+        >
           <Text className={styles.searchPlaceholder}>搜索商品</Text>
         </View>
-      </View>
 
-      <ScrollView scrollY className={styles.scrollContent} enhanced showScrollbar={false}>
         {/* 轮播图 */}
         <View className={styles.swiperSection}>
           <Swiper className={styles.swiper} autoplay interval={3000} circular indicatorDots indicatorColor='rgba(255,255,255,0.6)' indicatorActiveColor='#FF5A3C'>
